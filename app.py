@@ -57,7 +57,7 @@ def circuit(circuit_id):
     return { "name": c['name'], "src": c['src'], "description": c['description']}
 
 @app.route('/api/vault', methods=['POST'])
-def circuit(circuit_id):
+def vault_api():
     c = vault()
     records = []
     for x in c:
