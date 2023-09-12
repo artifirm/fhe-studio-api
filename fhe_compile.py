@@ -37,9 +37,9 @@ def execute_user_code(user_code, user_func):
         raise
 
 
-def fhe_compile(circuitSrc):
+def fhe_compile(id, usrData):
     src= f"""from concrete import fhe
-{circuitSrc}
+{usrData['src']}
 compiled_circuit = circuit.compile(inputset)
     """
     # bug in concrete
@@ -52,15 +52,15 @@ compiled_circuit = circuit.compile(inputset)
 
     serialized_client_specs: str = server.client_specs.serialize()
 
-    print(mlir)
-    print(json_config)
-    print(serialized_client_specs)
-
-    persist_ciruit({ 
+    doc = { 
         "mlir": mlir, 
         "config": json_config, 
         "client_specs": serialized_client_specs
-    })
+    }
+    doc.update(usrData)
+
+    print(doc)
+    persist_ciruit(doc)
     
 
     return str("compiled_circuit")
