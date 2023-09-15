@@ -7,24 +7,44 @@ mydb = myclient["mydatabase"]
 ciruits = mydb["ciruits"]
 keys = mydb["keys"]
 
-def persist_ciruit(c):
+def persist_ciruit(id, c):
     c['created_time'] = datetime.utcnow()
-    id_ = ciruits.insert_one(c)
-    print(f'inserted ciruit with id {id_.inserted_id }')
+    c['deleted'] = False
+    if id is None:
+        id_ = ciruits.insert_one(c)
+        print(f'inserted ciruit with id {id_.inserted_id }')
+    else:
+        ciruits.update_one({'_id':ObjectId(id)}, 
+                           { "$set": c }, False)
+        id_ = id
+        print(f'updated ciruit with id {id_ }')
+
+def delete_circuit(id, sub):
+    result = ciruits.update_one({'_id':ObjectId(id),"sub": sub }, 
+                           { "$set": {
+                               "deleted": True,
+                               "deleted_at": datetime.utcnow()
+                            }}, False)
+    if result.matched_count != 1:
+        raise Exception("no record found")
+    return "{}"
 
 def find_circuit(circuit_id):
     return ciruits.find_one(ObjectId(circuit_id))
 
 def find_circuits():
-    return ciruits.find()
+    return ciruits.find({"deleted": False})
 
 def find_keys(eval_key_id):
     return keys.find_one(ObjectId(eval_key_id))
 
 def persist_key(k):
+    k['created_time'] = datetime.utcnow()
+    k['deleted'] = False
     id_ = keys.insert_one(k)
     print(f'inserted key with id {id_.inserted_id }')
     return "OK"
 
 def vault():
-    return keys.find()
+    return keys.find({"deleted": False})
+

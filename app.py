@@ -5,12 +5,12 @@ from fhe_client import client_key_gen
 from fhe_server import fhe_server_compute
 import json
 
-from mongo_context import find_circuit, find_circuits, vault
+from mongo_context import find_circuit, find_circuits,vault, delete_circuit
 
 app = Flask(__name__)
 
-
-@app.route('/api/edit-circuit/<id>', methods=['POST'])
+@app.route('/api/edit-circuit/', methods=['PUT'], defaults={'id': None})
+@app.route('/api/edit-circuit/<id>', methods=['PUT'])
 def edit_circuit(id):
     form = json.loads(request.data)
     usrData = {
@@ -23,11 +23,10 @@ def edit_circuit(id):
     print(f'edit-circuit id: {id} , usrData')
     return fhe_compile(id, usrData)
 
-@app.route('/key-gen/<circuit_id>', methods=['POST'])
-def key_gen(circuit_id):
-    print(circuit_id)
-    client_key_gen(circuit_id)
-    return "OK"
+@app.route('/api/delete-circuit/<id>', methods=['DELETE'])
+def api_edit_circuit(id):
+    return delete_circuit(id, request.headers["sub"])
+
 
 @app.route('/fhe-eval/<eval_id>', methods=['POST'])
 def fhe_eval(eval_id):
@@ -56,6 +55,11 @@ def circuit(circuit_id):
     c = find_circuit(circuit_id)
     return { "name": c['name'], "src": c['src'], "description": c['description']}
 
+@app.route('/api/add-vault/<id>', methods=['PUT'])
+def add_vault_api(id):
+    client_key_gen(id, request.headers["sub"])
+    return "{}"
+
 @app.route('/api/vault', methods=['POST'])
 def vault_api():
     c = vault()
@@ -63,5 +67,9 @@ def vault_api():
     for x in c:
         records.append ({
             'id' : str(x['_id']), 
+            'circuit_id':str(x['circuit']['_id']),
+            'name': x['circuit']['name'],
+            'email': x['circuit']['email'],
+            'created_time': x.get('created_time', None)
         })
     return records
