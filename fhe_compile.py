@@ -50,7 +50,7 @@ compiled_circuit = circuit.compile(inputset)
     mlir = server._mlir
     json_config = json.dumps(server._configuration.__dict__)
 
-    serialized_client_specs: str = server.client_specs.serialize()
+    serialized_client_specs: str = server.client_specs.serialize().decode('utf-8')
 
     doc = { 
         "mlir": mlir, 

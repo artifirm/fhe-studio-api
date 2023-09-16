@@ -1,7 +1,7 @@
 # save this as app.py
 from flask import Flask, request
 from fhe_compile import fhe_compile
-from fhe_client import client_key_gen
+from fhe_client import client_key_gen, encrypt, decrypt
 from fhe_server import fhe_server_compute
 import json
 
@@ -28,11 +28,10 @@ def api_edit_circuit(id):
     return delete_circuit(id, request.headers["sub"])
 
 
-@app.route('/fhe-eval/<eval_id>', methods=['POST'])
-def fhe_eval(eval_id):
-    print(eval_id)
-    fhe_server_compute(eval_id)
-    return "OK"
+@app.route('/api/fhe-eval/<eval_key_id>', methods=['POST'])
+def fhe_eval(eval_key_id):
+    form = json.loads(request.data)
+    return fhe_server_compute(eval_key_id, form['value'])
 
 
 @app.route('/api/circuits', methods=['GET'])
@@ -73,3 +72,14 @@ def vault_api():
             'created_time': x.get('created_time', None)
         })
     return records
+
+@app.route('/api/vault/encrypt/<id>', methods=['POST'])
+def vault_encrypt_api(id):
+    form = json.loads(request.data)
+    return [encrypt(id, int(form['value']))]
+
+@app.route('/api/vault/decrypt/<id>', methods=['POST'])
+def vault_decrypt_api(id):
+    form = json.loads(request.data)
+    return [decrypt(id, form['value'])]
+
