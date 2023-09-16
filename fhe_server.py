@@ -17,13 +17,4 @@ def fhe_server_compute(eval_key_id: str, argb64: str):
     result: fhe.Value = server.run(arg, evaluation_keys=deserialized_evaluation_keys)
     serialized_result: bytes = result.serialize()
 
-    ###   ####### 
-    client_specs = fhe.ClientSpecs.deserialize(c['client_specs'].encode('utf-8'))
-    client = fhe.Client(client_specs)
-
-    client.keys.generate(seed=111)
-
-    deserialized_result = fhe.Value.deserialize(serialized_result)
-    decrypted_result = client.decrypt(deserialized_result)
-    print(f"eval value: {decrypted_result}")
     return [base64.b64encode(serialized_result).decode("ascii")]
