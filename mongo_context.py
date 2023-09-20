@@ -1,4 +1,5 @@
 import pymongo
+import json
 from bson.objectid import ObjectId
 from datetime import datetime
 
@@ -47,4 +48,11 @@ def persist_key(k):
 
 def vault():
     return keys.find({"deleted": False})
+
+def client_specs(id):
+    r = keys.find_one({"_id": ObjectId(id), "deleted": False})
+    json_str = r['circuit']['client_specs']
+    print(json_str)
+    return json.loads(json_str)
+
 

@@ -8,6 +8,7 @@ def gen_client(client_specs, seed: int = 111):
     return client
 
 def client_key_gen(circuit_id, sub):
+    c = find_circuit(circuit_id)
     client_specs = fhe.ClientSpecs.deserialize(c['client_specs'].encode('utf-8'))
     client = gen_client(client_specs)
 
@@ -20,15 +21,24 @@ def client_key_gen(circuit_id, sub):
                   "evaluation_keys": serialized_evaluation_keys
     })
 
-def encrypt(key_id, value):
+def encrypt(key_id: str, values: [str]):
     k = find_keys(key_id)
     client_specs = fhe.ClientSpecs.deserialize(k['circuit']['client_specs'].encode('utf-8'))
 
     client = gen_client(client_specs)
+    int_values = list(map(lambda a: int(a), values))
+    args = client.encrypt(*int_values)
+    
+    try:
+        iter(args)
+    except TypeError as te:
+        args = [args]
 
-    arg: fhe.Value = client.encrypt(value)
-    serialized_arg: bytes = arg.serialize()
-    return base64.b64encode(serialized_arg).decode("ascii")
+    encoded = []
+    for arg in args:
+        serialized_arg: bytes = arg.serialize()
+        encoded.append(base64.b64encode(serialized_arg).decode("ascii"))
+    return encoded;
 
 def decrypt(key_id, valueB64):
     k = find_keys(key_id)

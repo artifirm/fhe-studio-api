@@ -5,7 +5,7 @@ from fhe_client import client_key_gen, encrypt, decrypt
 from fhe_server import fhe_server_compute
 import json
 
-from mongo_context import find_circuit, find_circuits,vault, delete_circuit
+from mongo_context import find_circuit, find_circuits,vault, delete_circuit, client_specs
 
 app = Flask(__name__)
 
@@ -31,7 +31,7 @@ def api_edit_circuit(id):
 @app.route('/api/fhe-eval/<eval_key_id>', methods=['POST'])
 def fhe_eval(eval_key_id):
     form = json.loads(request.data)
-    return fhe_server_compute(eval_key_id, form['value'])
+    return fhe_server_compute(eval_key_id, form['values'])
 
 
 @app.route('/api/circuits', methods=['GET'])
@@ -76,10 +76,13 @@ def vault_api():
 @app.route('/api/vault/encrypt/<id>', methods=['POST'])
 def vault_encrypt_api(id):
     form = json.loads(request.data)
-    return [encrypt(id, int(form['value']))]
+    return encrypt(id, form['values'])
 
 @app.route('/api/vault/decrypt/<id>', methods=['POST'])
 def vault_decrypt_api(id):
     form = json.loads(request.data)
-    return [decrypt(id, form['value'])]
+    return [ decrypt(id, form['values']) ]
 
+@app.route('/api/vault/client-specs/<id>', methods=['POST'])
+def client_specs_api(id):
+    return client_specs(id)
