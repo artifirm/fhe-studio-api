@@ -36,13 +36,12 @@ def execute_user_code_local(user_code, user_func, return_dict):
             "config": json.dumps(server._configuration.__dict__), 
             "client_specs": server.client_specs.serialize().decode('utf-8')
         }
-#        return return_dict['value']
-    except SyntaxError:
-        # syntax error in the sandboxed code
-        raise
-    except BaseException:
-        # runtime error (probably) in the sandboxed code
-        raise
+
+    except Exception as e:
+        err_str = str(e)
+        print (err_str)
+        return_dict['value'] = {'exception': err_str }
+
 
 def execute_user_code(user_code, user_func, time_out_sec = 10):
     manager = Manager()
@@ -68,10 +67,12 @@ compiled_circuit = circuit.compile(inputset)
 
     print(src)
     doc = execute_user_code(src, "compiled_circuit")
-    doc.update(usrData)
-
-    print(doc)
-    persist_ciruit(id, doc)
+    if 'exception' in doc:
+        return doc['exception']
     
+    new_doc = { **doc, **usrData }
 
-    return str("compiled_circuit")
+    print(new_doc)
+    persist_ciruit(id, new_doc)
+    
+    return None

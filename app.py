@@ -20,8 +20,12 @@ def edit_circuit(id):
         "name": form['name'],
         "description": form['description']
         }
-    print(f'edit-circuit id: {id} , usrData')
-    return fhe_compile(id, usrData)
+    print(f'edit-circuit id: {id} , {usrData}')
+    result = fhe_compile(id, usrData)
+    if result is None:
+        return {}
+    
+    return {'exception': result}
 
 @app.route('/api/delete-circuit/<id>', methods=['DELETE'])
 def api_edit_circuit(id):
@@ -86,3 +90,15 @@ def vault_decrypt_api(id):
 @app.route('/api/vault/client-specs/<id>', methods=['POST'])
 def client_specs_api(id):
     return client_specs(id)
+
+@app.route('/dev-token', methods=['POST'])
+def dev_token():
+    return {'access_token':'dev-access-token'}
+
+@app.route('/dev-user')
+def dev_user():
+    return {
+        'email': 'dev-user@example.com',
+        'sub': 'dev-id',
+        'picture': None,
+        'email_verified': True}
