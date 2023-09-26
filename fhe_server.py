@@ -11,7 +11,7 @@ def fhe_server_compute(eval_key_id: str, argb64s: [str]):
 
     configuration = fhe.Configuration().fork(**json.loads(c['config']))
     server = fhe.Server.create(c['mlir'], configuration, False)
-    f = open(f"{c['_id']}.eval", mode="rb")
+    f = open(f"{eval_key_id}.eval", mode="rb")
     deserialized_evaluation_keys = fhe.EvaluationKeys.deserialize(f.read())
     f.close()
     #deserialized_evaluation_keys = fhe.EvaluationKeys.deserialize(k['evaluation_keys'])

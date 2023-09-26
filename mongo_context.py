@@ -44,7 +44,7 @@ def persist_key(k):
     k['deleted'] = False
     id_ = keys.insert_one(k)
     print(f'inserted key with id {id_.inserted_id }')
-    return "OK"
+    return id_.inserted_id
 
 def vault():
     return keys.find({"deleted": False})
@@ -56,3 +56,12 @@ def client_specs(id):
     return json.loads(json_str)
 
 
+def delete_vault_item(id, sub):
+    result = keys.update_one({'_id':ObjectId(id),"sub": sub }, 
+                           { "$set": {
+                               "deleted": True,
+                               "deleted_at": datetime.utcnow()
+                            }}, False)
+    if result.matched_count != 1:
+        raise Exception("no record found")
+    return "{}"

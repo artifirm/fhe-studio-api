@@ -5,7 +5,7 @@ from fhe_client import client_key_gen, encrypt, decrypt
 from fhe_server import fhe_server_compute
 import json
 
-from mongo_context import find_circuit, find_circuits,vault, delete_circuit, client_specs
+from mongo_context import find_circuit, find_circuits,vault, delete_circuit, client_specs, delete_vault_item
 
 app = Flask(__name__)
 
@@ -90,6 +90,13 @@ def vault_decrypt_api(id):
 @app.route('/api/vault/client-specs/<id>', methods=['POST'])
 def client_specs_api(id):
     return client_specs(id)
+
+
+@app.route('/api/delete-vault-item/<id>', methods=['DELETE'])
+def api_delete_vault_item(id):
+    return delete_vault_item(id, request.headers["sub"])
+
+
 
 @app.route('/dev-token', methods=['POST'])
 def dev_token():

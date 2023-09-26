@@ -14,16 +14,14 @@ def client_key_gen(circuit_id, sub):
 
     serialized_evaluation_keys = client.evaluation_keys.serialize()
     #print(f'serialized_evaluation_keys: {serialized_evaluation_keys}')
-
-
-    f = open(f"{circuit_id}.eval", "wb")
+    key_id = persist_key({ "circuit": c,
+                  "sub": sub,
+#                  "evaluation_keys": serialized_evaluation_keys
+                    })
+    f = open(f"{key_id}.eval", "wb")
     f.write(serialized_evaluation_keys)
     f.close()
 
-    persist_key({ "circuit": c,
-                  "sub": sub,
-#                  "evaluation_keys": serialized_evaluation_keys
-    })
 
 def encrypt(key_id: str, values: [str]):
     k = find_keys(key_id)
