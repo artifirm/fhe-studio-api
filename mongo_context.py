@@ -3,7 +3,8 @@ import json
 from bson.objectid import ObjectId
 from datetime import datetime
 
-myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+#myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+myclient = pymongo.MongoClient("mongodb://mongodb:27017/")
 mydb = myclient["mydatabase"]
 ciruits = mydb["ciruits"]
 keys = mydb["keys"]

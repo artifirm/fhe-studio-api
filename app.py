@@ -4,6 +4,7 @@ from fhe_compile import fhe_compile
 from fhe_client import client_key_gen, encrypt, decrypt
 from fhe_server import fhe_server_compute
 import json
+import os
 
 from mongo_context import find_circuit, find_circuits,vault, delete_circuit, client_specs, delete_vault_item
 
@@ -109,3 +110,8 @@ def dev_user():
         'sub': 'dev-id',
         'picture': None,
         'email_verified': True}
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)

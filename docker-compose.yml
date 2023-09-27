@@ -1,0 +1,18 @@
+version: "3.2"
+services:
+  mongodb:
+    image: mongo:6-jammy
+    ports:
+      - '27017:27017'
+    # volumes:
+    #   - dbdata6:/data/db
+  fhe-api:
+    build:
+        context: ./
+        dockerfile: ./Dockerfile
+    image: fhe-api:v1
+    ports:
+        - "5000:5000"
+    links:
+      - mongodb
+        
