@@ -1,2 +1,0 @@
-Linux-5.4.72-microsoft-standard-WSL2-x86_64-with-glibc2.35 #1 SMP Wed Oct 28 23:40:43 UTC 2020
-Python 3.10.12
