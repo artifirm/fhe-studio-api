@@ -1,6 +1,8 @@
 from concrete import fhe 
 from mongo_context import find_circuit, persist_key, find_keys
 import base64
+from fhe_studio_config import eval_keys_path
+
 
 def gen_client(client_specs, seed: int = 111):
     client = fhe.Client(client_specs)
@@ -18,7 +20,7 @@ def client_key_gen(circuit_id, sub):
                   "sub": sub,
 #                  "evaluation_keys": serialized_evaluation_keys
                     })
-    f = open(f"{key_id}.eval", "wb")
+    f = open(f"{eval_keys_path()}/{key_id}.eval", "wb")
     f.write(serialized_evaluation_keys)
     f.close()
 

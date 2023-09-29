@@ -1,5 +1,5 @@
 # save this as app.py
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from fhe_compile import fhe_compile
 from fhe_client import client_key_gen, encrypt, decrypt
 from fhe_server import fhe_server_compute
@@ -23,10 +23,7 @@ def edit_circuit(id):
         }
     print(f'edit-circuit id: {id} , {usrData}')
     result = fhe_compile(id, usrData)
-    if result is None:
-        return {}
-    
-    return {'exception': result}
+    return result
 
 @app.route('/api/delete-circuit/<id>', methods=['DELETE'])
 def api_edit_circuit(id):
@@ -49,6 +46,7 @@ def circuits():
             'id' : str(x['_id']), 
             'name' : x.get('name', None),
             'email' : x.get('email', None),
+            'polynomial_size': x.get('polynomial_size', None),
             'description' : x.get('description', None),
             'created_time': x.get('created_time', None),
         })
@@ -57,7 +55,8 @@ def circuits():
 @app.route('/api/circuit/<circuit_id>', methods=['POST'])
 def circuit(circuit_id):
     c = find_circuit(circuit_id)
-    return { "name": c['name'], "src": c['src'], "description": c['description']}
+    return { "name": c['name'], "src": c['src'], "description": c['description'], 
+            'polynomial_size': c['polynomial_size'] }
 
 @app.route('/api/add-vault/<id>', methods=['PUT'])
 def add_vault_api(id):
@@ -111,6 +110,15 @@ def dev_user():
         'picture': None,
         'email_verified': True}
 
+
+@app.route('/static/<path:path>')
+def send_report(path):
+    return send_from_directory('static', path)
+
+@app.route('/static')
+@app.route('/static/')
+def send_report_index():
+    return send_from_directory('static', 'index.html')
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))

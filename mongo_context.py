@@ -2,27 +2,27 @@ import pymongo
 import json
 from bson.objectid import ObjectId
 from datetime import datetime
+from fhe_studio_config import mongo_db_instance
 
-#myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-myclient = pymongo.MongoClient("mongodb://mongodb:27017/")
-mydb = myclient["mydatabase"]
-ciruits = mydb["ciruits"]
-keys = mydb["keys"]
+# init
+circuits = mongo_db_instance()["circuits"]
+keys = mongo_db_instance()["keys"]
 
 def persist_ciruit(id, c):
     c['created_time'] = datetime.utcnow()
-    c['deleted'] = False
+    c['deleted'] = False    
     if id is None:
-        id_ = ciruits.insert_one(c)
-        print(f'inserted ciruit with id {id_.inserted_id }')
+        id_ = circuits.insert_one(c).inserted_id
+        print(f'inserted ciruit with id {id_ }')
     else:
-        ciruits.update_one({'_id':ObjectId(id)}, 
+        circuits.update_one({'_id':ObjectId(id)}, 
                            { "$set": c }, False)
         id_ = id
         print(f'updated ciruit with id {id_ }')
+    return str(id_)
 
 def delete_circuit(id, sub):
-    result = ciruits.update_one({'_id':ObjectId(id),"sub": sub }, 
+    result = circuits.update_one({'_id':ObjectId(id),"sub": sub }, 
                            { "$set": {
                                "deleted": True,
                                "deleted_at": datetime.utcnow()
@@ -32,10 +32,10 @@ def delete_circuit(id, sub):
     return "{}"
 
 def find_circuit(circuit_id):
-    return ciruits.find_one(ObjectId(circuit_id))
+    return circuits.find_one(ObjectId(circuit_id))
 
 def find_circuits():
-    return ciruits.find({"deleted": False})
+    return circuits.find({"deleted": False})
 
 def find_keys(eval_key_id):
     return keys.find_one(ObjectId(eval_key_id))

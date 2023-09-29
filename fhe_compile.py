@@ -31,10 +31,18 @@ def execute_user_code_local(user_code, user_func, return_dict):
         exec(byte_code, my_globals)
         server = my_globals[user_func].server;
 
+        config_str =  server.client_specs.serialize().decode('utf-8');
+        print(config_str)
+
+        bootstrap_keys = json.loads(config_str).get("bootstrapKeys" ,[])
+        # if keys dont exists
+        bootstrap_keys.append({})
+
         return_dict['value'] = { 
             "mlir": server._mlir, 
             "config": json.dumps(server._configuration.__dict__), 
-            "client_specs": server.client_specs.serialize().decode('utf-8')
+            "client_specs": config_str,
+            "polynomial_size": bootstrap_keys[0].get("polynomialSize" , 0)
         }
 
     except Exception as e:
@@ -68,11 +76,11 @@ compiled_circuit = circuit.compile(inputset)
     print(src)
     doc = execute_user_code(src, "compiled_circuit")
     if 'exception' in doc:
-        return doc['exception']
+        return {'exception' : doc['exception'] }
     
     new_doc = { **doc, **usrData }
 
     print(new_doc)
-    persist_ciruit(id, new_doc)
+    id = persist_ciruit(id, new_doc)
     
-    return None
+    return {'id': id}
