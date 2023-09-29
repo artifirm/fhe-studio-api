@@ -160,6 +160,15 @@ def handle_exception(e):
     return  f"Internal Error: {str(e)}", 500
 
 
+@app.route('/static/<path:path>')
+def send_report(path):
+    return send_from_directory('static', path)
+
+@app.route('/static')
+@app.route('/static/')
+def send_report_index():
+    return send_from_directory('static', 'index.html')
+
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)
