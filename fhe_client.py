@@ -3,7 +3,6 @@ from mongo_context import find_circuit, persist_key, find_keys
 import base64
 from fhe_studio_config import eval_keys_path
 
-
 def gen_client(client_specs, seed: int = 111):
     client = fhe.Client(client_specs)
     client.keys.generate(seed = seed)
@@ -11,6 +10,10 @@ def gen_client(client_specs, seed: int = 111):
 
 def client_key_gen(circuit_id, sub):
     c = find_circuit(circuit_id)
+    
+    if c['polynomial_size'] > 248:
+        raise Exception('polynomial_size needs to be less then 2048')
+    
     client_specs = fhe.ClientSpecs.deserialize(c['client_specs'].encode('utf-8'))
     client = gen_client(client_specs)
 
