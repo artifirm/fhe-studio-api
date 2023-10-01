@@ -160,14 +160,22 @@ def handle_exception(e):
     return  f"Internal Error: {str(e)}", 500
 
 
-@app.route('/static/<path:path>')
+@app.route('/<path:path>')
 def send_report(path):
     return send_from_directory('static', path)
 
-@app.route('/static')
-@app.route('/static/')
+@app.route('/')
 def send_report_index():
     return send_from_directory('static', 'index.html')
+
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """Return JSON instead of HTML for HTTP errors."""
+    #print(e)
+    traceback.print_exception(*sys.exc_info())
+    return  f"Internal Error: {str(e)}", 500
+
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
