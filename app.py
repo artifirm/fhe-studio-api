@@ -165,6 +165,10 @@ def send_report(path):
     return send_from_directory('static', path)
 
 @app.route('/')
+@app.route('/oauth2')
+@app.route('/fhe-vault')
+@app.route('/fhe-editor')
+@app.route('/circuits-zoo')
 def send_report_index():
     return send_from_directory('static', 'index.html')
 
@@ -174,6 +178,10 @@ def handle_exception(e):
     """Return JSON instead of HTML for HTTP errors."""
     #print(e)
     traceback.print_exception(*sys.exc_info())
+
+    if str(e) == 'USER_NOT_AUTHORIZED':
+        return  f"NOT_AUTHORIZED", 401
+    
     return  f"Internal Error: {str(e)}", 500
 
 
