@@ -4,6 +4,8 @@ from bson.objectid import ObjectId
 from datetime import datetime
 from fhe_studio_config import mongo_db_instance
 
+MAX_FETCH_LIMIT=1024
+
 # init
 circuits = mongo_db_instance()["circuits"]
 keys = mongo_db_instance()["keys"]
@@ -34,8 +36,11 @@ def delete_circuit(id, sub):
 def find_circuit(circuit_id):
     return circuits.find_one(ObjectId(circuit_id))
 
-def find_circuits():
-    return circuits.find({"deleted": False})
+def find_circuits(subname):
+    cond = {"deleted": False}
+    if subname != '':
+        cond["name"] = {"$regex" : subname}
+    return circuits.find(cond).limit(MAX_FETCH_LIMIT)
 
 def find_keys(eval_key_id, sub):
     return keys.find_one({'_id':ObjectId(eval_key_id),"sub": sub })
@@ -48,7 +53,7 @@ def persist_key(k):
     return id_.inserted_id
 
 def vault(sub):
-    return keys.find({"deleted": False, "sub": sub})
+    return keys.find({"deleted": False, "sub": sub}).limit(MAX_FETCH_LIMIT)
 
 def client_specs(id, sub):
     r = keys.find_one({"_id": ObjectId(id), "deleted": False, "sub": sub})

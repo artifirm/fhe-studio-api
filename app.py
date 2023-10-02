@@ -44,7 +44,9 @@ def fhe_eval(eval_key_id):
 
 @app.route('/api/circuits', methods=['GET'])
 def circuits():
-    c = find_circuits()
+    term = str(request.args.get('name',''))
+    print(f'search term:{term}')
+    c = find_circuits(term)
     records = []
     for x in c:
         print(x)
@@ -61,7 +63,7 @@ def circuits():
 @app.route('/api/circuit/<circuit_id>', methods=['POST'])
 def circuit(circuit_id):
     c = find_circuit(circuit_id)
-    locked = True if c['sub'] == user_sub_or_default(c['sub']) else False
+    locked = c['sub'] == user_sub_or_default('None')
     src = c['src']
 
     if c['is_private'] and c['sub'] != user_sub_or_default('None'):
