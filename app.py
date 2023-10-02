@@ -8,7 +8,7 @@ import os
 from werkzeug.exceptions import HTTPException
 import traceback
 import sys
-from fhe_studio_config import user_info, user_sub
+from fhe_studio_config import user_info, user_sub, user_sub_or_default
 
 from mongo_context import find_circuit, find_circuits,vault, delete_circuit, client_specs, delete_vault_item
 
@@ -24,7 +24,8 @@ def edit_circuit(id):
         "email": u["email"],
         "src": form['src'],
         "name": form['name'],
-        "description": form['description']
+        "description": form['description'],
+        "is_private": bool(form['is_private'])
         }
     print(f'edit-circuit id: {id} , {usrData}')
     result = fhe_compile(id, usrData)
@@ -60,8 +61,15 @@ def circuits():
 @app.route('/api/circuit/<circuit_id>', methods=['POST'])
 def circuit(circuit_id):
     c = find_circuit(circuit_id)
-    return { "name": c['name'], "src": c['src'], "description": c['description'], 
-            'polynomial_size': c['polynomial_size'] }
+    locked = True if c['sub'] == user_sub_or_default(c['sub']) else False
+    src = c['src']
+
+    if c['is_private'] and c['sub'] != user_sub_or_default('None'):
+        src = '# source code is private for this circuit'
+
+    return { "name": c['name'], "src": src, "description": c['description'], 
+            "is_private": c['is_private'],
+            'polynomial_size': c['polynomial_size'], 'locked': not locked }
 
 @app.route('/api/add-vault/<id>', methods=['PUT'])
 def add_vault_api(id):
