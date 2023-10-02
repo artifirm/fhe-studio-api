@@ -9,7 +9,7 @@ import logging
 cache = ExpiringDict(max_len=100000, max_age_seconds = 60 * 60)
 
 database_url = os.environ.get("DATABASE_URL", "")
-use_oauth2 = os.environ.get("USE_OAUTH2", "0")
+use_oauth2 = os.environ.get("USE_OAUTH2", "1")
 
 if database_url != "":
     logging.info(f"- USING DATABASE- : {database_url}")
