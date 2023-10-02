@@ -1,0 +1,21 @@
+version: "3.2"
+services:
+  mongodb:
+    image: mongo:6-jammy
+    ports:
+      - '27017:27017'
+    volumes:
+      - fhe_mongo_data:/data/db
+  fhe-api:
+    image: fhe-api:v1
+    ports:
+        - "5000:5000"
+    volumes:
+      - ./fhe-evals:/fhe-evals
+    environment:
+        - EVAL_KEY_PATH=/fhe-evals
+        - DATABASE_URL=mongodb
+        - USE_OAUTH2=0
+
+volumes:
+  fhe_mongo_data:        

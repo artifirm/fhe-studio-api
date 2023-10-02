@@ -2,3 +2,6 @@ concrete-python==2.3.0
 RestrictedPython==6.2
 Flask==2.3.3
 pymongo==4.5.0
+mongomock==4.1.2
+expiringdict==1.2.2
+requests==2.31.0

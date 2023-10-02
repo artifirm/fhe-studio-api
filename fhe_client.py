@@ -11,7 +11,8 @@ def gen_client(client_specs, seed: int = 111):
 def client_key_gen(circuit_id, sub):
     c = find_circuit(circuit_id)
     
-    if c['polynomial_size'] > 248:
+    print(f"polynomial_size: {c['polynomial_size']}")
+    if c['polynomial_size'] > 2049:
         raise Exception('polynomial_size needs to be less then 2048')
     
     client_specs = fhe.ClientSpecs.deserialize(c['client_specs'].encode('utf-8'))
@@ -28,8 +29,8 @@ def client_key_gen(circuit_id, sub):
     f.close()
 
 
-def encrypt(key_id: str, values: [str]):
-    k = find_keys(key_id)
+def encrypt(key_id: str, values: [str], sub):
+    k = find_keys(key_id, sub)
     client_specs = fhe.ClientSpecs.deserialize(k['circuit']['client_specs'].encode('utf-8'))
 
     client = gen_client(client_specs)
@@ -47,8 +48,8 @@ def encrypt(key_id: str, values: [str]):
         encoded.append(base64.b64encode(serialized_arg).decode("ascii"))
     return encoded;
 
-def decrypt(key_id, valueB64):
-    k = find_keys(key_id)
+def decrypt(key_id, valueB64, sub):
+    k = find_keys(key_id, sub)
     client_specs = fhe.ClientSpecs.deserialize(k['circuit']['client_specs'].encode('utf-8'))
 
     client = gen_client(client_specs)

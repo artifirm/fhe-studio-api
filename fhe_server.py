@@ -7,8 +7,8 @@ from fhe_studio_config import eval_keys_path
 
 
 
-def fhe_server_compute(eval_key_id: str, argb64s: [str]):
-    k = find_keys(eval_key_id)
+def fhe_server_compute(eval_key_id: str, argb64s: [str], sub):
+    k = find_keys(eval_key_id, sub)
     c = k['circuit']
     
     print(c)

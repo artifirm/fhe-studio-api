@@ -13,6 +13,9 @@ RUN pip install -r requirements.txt
 # copy every content from the local file to the image
 COPY ./*.py /fhe-api
 
+# UI
+COPY static static
+
 # configure the container to run in an executed manner
 ENTRYPOINT [ "python" ]
 

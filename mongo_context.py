@@ -37,8 +37,8 @@ def find_circuit(circuit_id):
 def find_circuits():
     return circuits.find({"deleted": False})
 
-def find_keys(eval_key_id):
-    return keys.find_one(ObjectId(eval_key_id))
+def find_keys(eval_key_id, sub):
+    return keys.find_one({'_id':ObjectId(eval_key_id),"sub": sub })
 
 def persist_key(k):
     k['created_time'] = datetime.utcnow()
@@ -47,11 +47,11 @@ def persist_key(k):
     print(f'inserted key with id {id_.inserted_id }')
     return id_.inserted_id
 
-def vault():
-    return keys.find({"deleted": False})
+def vault(sub):
+    return keys.find({"deleted": False, "sub": sub})
 
-def client_specs(id):
-    r = keys.find_one({"_id": ObjectId(id), "deleted": False})
+def client_specs(id, sub):
+    r = keys.find_one({"_id": ObjectId(id), "deleted": False, "sub": sub})
     json_str = r['circuit']['client_specs']
     print(json_str)
     return json.loads(json_str)
