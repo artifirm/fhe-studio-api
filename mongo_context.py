@@ -7,8 +7,6 @@ import logging
 
 MAX_FETCH_LIMIT=1024
 
-MAX_FETCH_LIMIT=1024
-
 # init
 circuits = mongo_db_instance()["circuits"]
 keys = mongo_db_instance()["keys"]
