@@ -5,6 +5,7 @@ from concrete.fhe.extensions.tag import tag_context
 from mongo_context import persist_ciruit
 from multiprocessing import Process, Manager
 from concrete import fhe
+import logging
 
 _SAFE_MODULES = frozenset(("numpy","concrete"))
 
@@ -31,15 +32,23 @@ def execute_user_code_local(user_code, user_func, return_dict):
         exec(byte_code, my_globals)
         server = my_globals[user_func].server;
 
+        config_str =  server.client_specs.serialize().decode('utf-8');
+        logging.debug(config_str)
+
+        bootstrap_keys = json.loads(config_str).get("bootstrapKeys" ,[])
+        # if keys dont exists
+        bootstrap_keys.append({})
+
         return_dict['value'] = { 
             "mlir": server._mlir, 
             "config": json.dumps(server._configuration.__dict__), 
-            "client_specs": server.client_specs.serialize().decode('utf-8')
+            "client_specs": config_str,
+            "polynomial_size": bootstrap_keys[0].get("polynomialSize" , 0)
         }
 
     except Exception as e:
         err_str = str(e)
-        print (err_str)
+        logging.error (err_str)
         return_dict['value'] = {'exception': err_str }
 
 
@@ -54,7 +63,7 @@ def execute_user_code(user_code, user_func, time_out_sec = 10):
     if p.is_alive():
         p.terminate()
         raise Exception(f"Exceeded execution limit")
-    print('return_dict:', return_dict)
+    logging.debug(f'return_dict: {return_dict}' )
     return return_dict['value']
 
 def fhe_compile(id, usrData):
@@ -64,15 +73,14 @@ compiled_circuit = circuit.compile(inputset)
     """
     # bug in concrete
     tag_context.stack = []
-
-    print(src)
+    logging.info(src)
     doc = execute_user_code(src, "compiled_circuit")
     if 'exception' in doc:
-        return doc['exception']
+        return {'exception' : doc['exception'] }
     
     new_doc = { **doc, **usrData }
 
-    print(new_doc)
-    persist_ciruit(id, new_doc)
+    logging.debug(new_doc)
+    id = persist_ciruit(id, new_doc)
     
-    return None
+    return {'id': id}
