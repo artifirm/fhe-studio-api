@@ -11,8 +11,6 @@ def fhe_server_compute(eval_key_id: str, argb64s: [str], sub):
     k = find_keys(eval_key_id, sub)
     c = k['circuit']
     
-    print(c)
-
     configuration = fhe.Configuration().fork(**json.loads(c['config']))
     server = fhe.Server.create(c['mlir'], configuration, False)
     f = open(f"{eval_keys_path()}/{eval_key_id}.eval", mode="rb")

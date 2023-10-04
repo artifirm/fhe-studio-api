@@ -3,6 +3,7 @@ import json
 from bson.objectid import ObjectId
 from datetime import datetime
 from fhe_studio_config import mongo_db_instance
+import logging
 
 MAX_FETCH_LIMIT=1024
 
@@ -15,12 +16,12 @@ def persist_ciruit(id, c):
     c['deleted'] = False    
     if id is None:
         id_ = circuits.insert_one(c).inserted_id
-        print(f'inserted ciruit with id {id_ }')
+        logging.debug(f'inserted ciruit with id {id_ }')
     else:
         circuits.update_one({'_id':ObjectId(id)}, 
                            { "$set": c }, False)
         id_ = id
-        print(f'updated ciruit with id {id_ }')
+        logging.debug(f'updated ciruit with id {id_ }')
     return str(id_)
 
 def delete_circuit(id, sub):
@@ -49,7 +50,7 @@ def persist_key(k):
     k['created_time'] = datetime.utcnow()
     k['deleted'] = False
     id_ = keys.insert_one(k)
-    print(f'inserted key with id {id_.inserted_id }')
+    logging.debug(f'inserted key with id {id_.inserted_id }')
     return id_.inserted_id
 
 def vault(sub):
@@ -58,7 +59,7 @@ def vault(sub):
 def client_specs(id, sub):
     r = keys.find_one({"_id": ObjectId(id), "deleted": False, "sub": sub})
     json_str = r['circuit']['client_specs']
-    print(json_str)
+    logging.debug(json_str)
     return json.loads(json_str)
 
 

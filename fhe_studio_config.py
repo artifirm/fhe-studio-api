@@ -4,17 +4,19 @@ import mongomock
 from flask import request
 import requests
 from expiringdict import ExpiringDict
+import logging
+
 cache = ExpiringDict(max_len=100000, max_age_seconds = 60 * 60)
 
 database_url = os.environ.get("DATABASE_URL", "")
-use_oauth2 = os.environ.get("USE_OAUTH2", "1")
+use_oauth2 = os.environ.get("USE_OAUTH2", "0")
 
 if database_url != "":
-    print(f"- USING DATABASE- : {database_url}")
+    logging.info(f"- USING DATABASE- : {database_url}")
     myclient = pymongo.MongoClient(f"mongodb://{database_url}")
     mongo_db_instance_ = myclient["fhe_studio"]
 else:
-    print("--- USING MOCK DATABASE ---")
+    logging.info("--- USING MOCK DATABASE ---")
     mongo_db_instance_ = mongomock.MongoClient().db
 
 
@@ -38,7 +40,7 @@ def user_info():
 
 def user_info_impl(token):
     if use_oauth2 != '0':
-        print(f'validating token: ${token}')
+        logging.debug(f'validating token: ${token}')
         headers = {'Accept': 'application/json',
                    'Authorization': token }
         response = requests.get('https://openidconnect.googleapis.com/v1/userinfo', headers = headers)
@@ -46,7 +48,7 @@ def user_info_impl(token):
             raise Exception("USER_NOT_AUTHORIZED")
         
         r = response.json()
-        print(f'validated token: ${r}')
+        logging.debug(f'validated token: ${r}')
         return {
             'email': r['email'],
             'sub': r['sub'],
@@ -62,4 +64,6 @@ def user_info_impl(token):
         }  
 
 def user_sub():
+    u = user_info()
+    logging.debug(f'user: {str(u)}')
     return user_info()['sub']

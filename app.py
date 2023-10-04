@@ -5,12 +5,26 @@ from fhe_client import client_key_gen, encrypt, decrypt
 from fhe_server import fhe_server_compute
 import json
 import os
-from werkzeug.exceptions import HTTPException
 import traceback
 import sys
 from fhe_studio_config import user_info, user_sub, user_sub_or_default
 
 from mongo_context import find_circuit, find_circuits,vault, delete_circuit, client_specs, delete_vault_item
+import logging
+
+root = logging.getLogger()
+root.setLevel(logging.DEBUG)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+
+root.handlers.clear()
+root.addHandler(handler)
+
+logging.info('----------Starting FHE STUDIO API----------------')
+
 
 app = Flask(__name__)
 
@@ -27,7 +41,7 @@ def edit_circuit(id):
         "description": form['description'],
         "is_private": bool(form['is_private'])
         }
-    print(f'edit-circuit id: {id} , {usrData}')
+    logging.info(f'edit-circuit id: {id} , {usrData}')
     result = fhe_compile(id, usrData)
     return result
 
@@ -45,11 +59,10 @@ def fhe_eval(eval_key_id):
 @app.route('/api/circuits', methods=['GET'])
 def circuits():
     term = str(request.args.get('name',''))
-    print(f'search term:{term}')
+    logging.debug(f'search term:{term}')
     c = find_circuits(term)
     records = []
     for x in c:
-        print(x)
         records.append ({
             'id' : str(x['_id']), 
             'name' : x.get('name', None),
@@ -139,7 +152,6 @@ def send_report_index():
 @app.errorhandler(Exception)
 def handle_exception(e):
     """Return JSON instead of HTML for HTTP errors."""
-    #print(e)
     traceback.print_exception(*sys.exc_info())
 
     if str(e) == 'USER_NOT_AUTHORIZED':

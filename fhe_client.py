@@ -2,6 +2,7 @@ from concrete import fhe
 from mongo_context import find_circuit, persist_key, find_keys
 import base64
 from fhe_studio_config import eval_keys_path
+import logging
 
 def gen_client(client_specs, seed: int = 111):
     client = fhe.Client(client_specs)
@@ -11,7 +12,7 @@ def gen_client(client_specs, seed: int = 111):
 def client_key_gen(circuit_id, sub):
     c = find_circuit(circuit_id)
     
-    print(f"polynomial_size: {c['polynomial_size']}")
+    logging.debug(f"polynomial_size: {c['polynomial_size']}")
     if c['polynomial_size'] > 2049:
         raise Exception('polynomial_size needs to be less then 2048')
     
