@@ -15,7 +15,7 @@ services:
     environment:
         - EVAL_KEY_PATH=/fhe-evals
         - DATABASE_URL=mongodb
-        - USE_OAUTH2=0
+        - USE_OAUTH2=1
 
 volumes:
   fhe_mongo_data:        

@@ -66,7 +66,6 @@ def circuits():
         records.append ({
             'id' : str(x['_id']), 
             'name' : x.get('name', None),
-            'email' : x.get('email', None),
             'polynomial_size': x.get('polynomial_size', None),
             'description' : x.get('description', None),
             'created_time': x.get('created_time', None),
@@ -106,6 +105,10 @@ def vault_api():
         })
     return records
 
+# ********************************
+# Todo: encrypt & decrypt should be a WebAssembly local function
+# both functions needs to be removed from here
+# ********************************
 @app.route('/api/vault/encrypt/<id>', methods=['POST'])
 def vault_encrypt_api(id):
     form = json.loads(request.data)
@@ -136,9 +139,9 @@ def dev_user():
     return user_info()
 
 
-@app.route('/<path:path>')
-def send_report(path):
-    return send_from_directory('static', path)
+#@app.route('/<path:path>')
+#def send_report(path):
+#    return send_from_directory('static', path)
 
 @app.route('/')
 @app.route('/oauth2')
