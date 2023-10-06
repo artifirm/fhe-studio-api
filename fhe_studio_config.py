@@ -30,7 +30,7 @@ def user_info():
     token = request.headers["authorization"]
     if token not in cache:
         cache[token] = user_info_impl(token)
-    logging.debug(f'token: ${token}')
+    logging.debug(f'user_info: ${cache[token]}')
     return cache[token]
 
 def user_sub_or_default(sub_default):
@@ -41,7 +41,7 @@ def user_sub_or_default(sub_default):
 
 def user_info_impl(token):
     if use_oauth2 != '0':
-        logging.debug(f'validating token: ${token}')
+        logging.debug(f'validating new token')
         headers = {'Accept': 'application/json',
                    'Authorization': token }
         response = requests.get('https://openidconnect.googleapis.com/v1/userinfo', headers = headers)
@@ -49,7 +49,7 @@ def user_info_impl(token):
             raise Exception("USER_NOT_AUTHORIZED")
         
         r = response.json()
-        logging.debug(f'validated token: ${r}')
+        logging.debug(f'validated token, response: ${r}')
         return {
             'email': r['email'],
             'sub': r['sub'],
