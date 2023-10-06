@@ -26,18 +26,18 @@ def eval_keys_path():
 def mongo_db_instance():
     return mongo_db_instance_
 
-def user_sub_or_default(sub_default):
-    token = request.headers.get("authorization", None)
-    if token is None:
-        return sub_default
-    return cache.get(token, {'sub': sub_default})['sub']
-
 def user_info():
     token = request.headers["authorization"]
     if token not in cache:
         cache[token] = user_info_impl(token)
     logging.debug(f'token: ${token}')
     return cache[token]
+
+def user_sub_or_default(sub_default):
+    token = request.headers.get("authorization", None)
+    if token is None:
+        return sub_default
+    return user_info()['sub']
 
 def user_info_impl(token):
     if use_oauth2 != '0':
