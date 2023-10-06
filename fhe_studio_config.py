@@ -36,6 +36,7 @@ def user_info():
     token = request.headers["authorization"]
     if token not in cache:
         cache[token] = user_info_impl(token)
+    logging.debug(f'token: ${token}')
     return cache[token]
 
 def user_info_impl(token):

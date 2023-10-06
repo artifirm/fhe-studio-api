@@ -138,20 +138,6 @@ def dev_token():
 def dev_user():
     return user_info()
 
-
-#@app.route('/<path:path>')
-#def send_report(path):
-#    return send_from_directory('static', path)
-
-@app.route('/')
-@app.route('/oauth2')
-@app.route('/fhe-vault')
-@app.route('/fhe-editor')
-@app.route('/circuits-zoo')
-def send_report_index():
-    return send_from_directory('static', 'index.html')
-
-
 @app.errorhandler(Exception)
 def handle_exception(e):
     """Return JSON instead of HTML for HTTP errors."""
