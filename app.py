@@ -39,7 +39,8 @@ def edit_circuit(id):
         "src": form['src'],
         "name": form['name'],
         "description": form['description'],
-        "is_private": bool(form['is_private'])
+        "is_private": bool(form['is_private']),
+        "is_published": bool(form['is_published'])
         }
     logging.info(f'edit-circuit id: {id} , {usrData}')
     result = fhe_compile(id, usrData)
@@ -55,22 +56,30 @@ def fhe_eval(eval_key_id):
     form = json.loads(request.data)
     return fhe_server_compute(eval_key_id, form['values'], user_sub())
 
-
-@app.route('/api/circuits', methods=['GET'])
-def circuits():
+def list_circuits(is_published_only = False, sub = None):
     term = str(request.args.get('name',''))
     logging.debug(f'search term:{term}')
-    c = find_circuits(term)
+    c = find_circuits(term, is_published_only, sub)
     records = []
     for x in c:
         records.append ({
             'id' : str(x['_id']), 
             'name' : x.get('name', None),
             'polynomial_size': x.get('polynomial_size', None),
+            'complexity': x.get('complexity', None),
             'description' : x.get('description', None),
             'created_time': x.get('created_time', None),
+            "is_published": x.get('is_published', False),
         })
     return records
+
+@app.route('/api/circuits', methods=['GET'])
+def circuits():
+    return list_circuits(is_published_only = True)
+
+@app.route('/api/my-circuits', methods=['GET'])
+def my_circuits():
+    return list_circuits(sub = user_sub())
 
 @app.route('/api/circuit/<circuit_id>', methods=['POST'])
 def circuit(circuit_id):
@@ -82,7 +91,7 @@ def circuit(circuit_id):
         src = '# source code is private for this circuit'
 
     return { "name": c['name'], "src": src, "description": c['description'], 
-            "is_private": c['is_private'],
+            "is_private": c['is_private'], "is_published": c.get('is_published', False),
             'polynomial_size': c['polynomial_size'], 'locked': not locked }
 
 @app.route('/api/add-vault/<id>', methods=['PUT'])
