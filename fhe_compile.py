@@ -41,6 +41,7 @@ def execute_user_code_local(user_code, user_func, return_dict):
 
         return_dict['value'] = { 
             "mlir": server._mlir, 
+            "complexity": int(server.complexity), 
             "config": json.dumps(server._configuration.__dict__), 
             "client_specs": config_str,
             "polynomial_size": bootstrap_keys[0].get("polynomialSize" , 0)
