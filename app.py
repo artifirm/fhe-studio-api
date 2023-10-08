@@ -9,7 +9,7 @@ import traceback
 import sys
 from fhe_studio_config import user_info, user_sub, user_sub_or_default
 
-from mongo_context import find_circuit, find_circuits,vault, delete_circuit, client_specs, delete_vault_item
+from mongo_context import find_circuit, find_circuits,vault, delete_circuit, client_specs, delete_vault_item, client_src
 import logging
 
 root = logging.getLogger()
@@ -94,6 +94,11 @@ def circuit(circuit_id):
             "is_private": c['is_private'], "is_published": c.get('is_published', False),
             'polynomial_size': c['polynomial_size'], 'locked': not locked }
 
+@app.route('/api/mlir/<circuit_id>', methods=['GET'])
+def show_mlir(circuit_id):
+    c = find_circuit(circuit_id)
+    return {"mlir": c.get("mlir", "no code for this circuit")}
+
 @app.route('/api/add-vault/<id>', methods=['PUT'])
 def add_vault_api(id):
     client_key_gen(id, user_sub())
@@ -136,6 +141,10 @@ def client_specs_api(id):
 @app.route('/api/delete-vault-item/<id>', methods=['DELETE'])
 def api_delete_vault_item(id):
     return delete_vault_item(id, user_sub())
+
+@app.route('/api/vault-circuit/<id>', methods=['GET'])
+def api_client_src(id):
+    return client_src(id, user_sub())
 
 
 
