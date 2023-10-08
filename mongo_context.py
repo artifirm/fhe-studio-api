@@ -16,12 +16,12 @@ def persist_ciruit(id, c):
     c['deleted'] = False    
     if id is None:
         id_ = circuits.insert_one(c).inserted_id
-        logging.debug(f'inserted circuit with id {id_ }')
+        logging.debug(f'inserted ciruit with id {id_ }')
     else:
         circuits.update_one({'_id':ObjectId(id)}, 
                            { "$set": c }, False)
         id_ = id
-        logging.debug(f'updated circuit with id {id_ }')
+        logging.debug(f'updated ciruit with id {id_ }')
     return str(id_)
 
 def delete_circuit(id, sub):
@@ -37,17 +37,10 @@ def delete_circuit(id, sub):
 def find_circuit(circuit_id):
     return circuits.find_one(ObjectId(circuit_id))
 
-def find_circuits(subname, is_published_only, sub):
+def find_circuits(subname):
     cond = {"deleted": False}
     if subname != '':
         cond["name"] = {"$regex" : subname}
-    
-    if is_published_only:
-        cond["is_published"] = True
-
-    if sub is not None:
-        cond["sub"] = sub
-        
     return circuits.find(cond).limit(MAX_FETCH_LIMIT)
 
 def find_keys(eval_key_id, sub):
