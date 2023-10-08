@@ -69,6 +69,11 @@ def client_specs(id, sub):
     logging.debug(json_str)
     return json.loads(json_str)
 
+def client_src(id, sub):
+    r = keys.find_one({"_id": ObjectId(id), "deleted": False, "sub": sub})
+    src = r['circuit']['src']
+    return {'src': src}
+
 
 def delete_vault_item(id, sub):
     result = keys.update_one({'_id':ObjectId(id),"sub": sub }, 
