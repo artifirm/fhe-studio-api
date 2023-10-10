@@ -3,6 +3,9 @@ from mongo_context import find_circuit, persist_key, find_keys
 import base64
 from fhe_studio_config import eval_keys_path
 import logging
+import os
+
+MAX_COMPLEXITY = int(os.environ.get("MAX_COMPLEXITY", "0"))
 
 def gen_client(client_specs, seed: int = 111):
     client = fhe.Client(client_specs)
@@ -12,9 +15,9 @@ def gen_client(client_specs, seed: int = 111):
 def client_key_gen(circuit_id, sub):
     c = find_circuit(circuit_id)
     
-    logging.debug(f"polynomial_size: {c['polynomial_size']}")
-    if c['polynomial_size'] > 2049:
-        raise Exception('polynomial_size needs to be less then 2048')
+    logging.debug(f"polynomial_size: {c['polynomial_size']}, complexity: {c.get('complexity',0)}")
+    if MAX_COMPLEXITY > 0 and c['complexity'] > MAX_COMPLEXITY:
+         raise Exception(f'complexity needs to be less then {MAX_COMPLEXITY}. You can run a fhe-studio docker container locally for bigger circuits')
     
     client_specs = fhe.ClientSpecs.deserialize(c['client_specs'].encode('utf-8'))
     client = gen_client(client_specs)
@@ -30,12 +33,15 @@ def client_key_gen(circuit_id, sub):
     f.close()
 
 
-def encrypt(key_id: str, values: [str], sub):
-    k = find_keys(key_id, sub)
-    client_specs = fhe.ClientSpecs.deserialize(k['circuit']['client_specs'].encode('utf-8'))
+def encrypt(client_specs_b64: str, values: [str]):
+    #k = find_keys(key_id, sub)
+    #client_specs = fhe.ClientSpecs.deserialize(k['circuit']['client_specs'].encode('utf-8'))
+    client_specs = fhe.ClientSpecs.deserialize(base64.b64decode(client_specs_b64))
 
     client = gen_client(client_specs)
-    int_values = list(map(lambda a: int(a), values))
+
+    int_values = values
+    #print(f'int_values to :::::::::::: ${int_values}')
     args = client.encrypt(*int_values)
     
     try:
@@ -47,11 +53,12 @@ def encrypt(key_id: str, values: [str], sub):
     for arg in args:
         serialized_arg: bytes = arg.serialize()
         encoded.append(base64.b64encode(serialized_arg).decode("ascii"))
-    return encoded;
+    return encoded
 
-def decrypt(key_id, valueB64, sub):
-    k = find_keys(key_id, sub)
-    client_specs = fhe.ClientSpecs.deserialize(k['circuit']['client_specs'].encode('utf-8'))
+def decrypt(client_specs_b64: dict, valueB64):
+    #k = find_keys(key_id, sub)
+    client_specs = fhe.ClientSpecs.deserialize(base64.b64decode(client_specs_b64))
+    #client_specs = fhe.ClientSpecs.deserialize(k['circuit']['client_specs'].encode('utf-8'))
 
     client = gen_client(client_specs)
 

@@ -4,6 +4,7 @@ from bson.objectid import ObjectId
 from datetime import datetime
 from fhe_studio_config import mongo_db_instance
 import logging
+import base64 
 
 MAX_FETCH_LIMIT=1024
 
@@ -67,7 +68,7 @@ def client_specs(id, sub):
     r = keys.find_one({"_id": ObjectId(id), "deleted": False, "sub": sub})
     json_str = r['circuit']['client_specs']
     logging.debug(json_str)
-    return json.loads(json_str)
+    return base64.b64encode(json_str.encode("ascii")).decode("ascii") 
 
 def client_src(id, sub):
     r = keys.find_one({"_id": ObjectId(id), "deleted": False, "sub": sub})

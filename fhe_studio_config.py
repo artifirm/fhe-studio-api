@@ -5,19 +5,33 @@ from flask import request
 import requests
 from expiringdict import ExpiringDict
 import logging
+import json
+from bson.json_util import loads
 
-cache = ExpiringDict(max_len=100000, max_age_seconds = 60 * 60)
+cache = ExpiringDict(max_len=100000, max_age_seconds = 60 * 60 * 24 * 31)
 
 database_url = os.environ.get("DATABASE_URL", "")
 use_oauth2 = os.environ.get("USE_OAUTH2", "0")
 
 if database_url != "":
-    logging.info(f"- USING DATABASE- : {database_url}")
+    logging.warn(f"- USING DATABASE- : {database_url}")
     myclient = pymongo.MongoClient(f"mongodb://{database_url}")
     mongo_db_instance_ = myclient["fhe_studio"]
 else:
-    logging.info("--- USING MOCK DATABASE ---")
+    logging.warn("--- USING MOCK DATABASE ---")
     mongo_db_instance_ = mongomock.MongoClient().db
+    
+    with open('fhe_studio.circuits.bson') as file:
+         file_lines = file.readlines()
+    
+    for line in file_lines:
+        if len(line) > 0:
+         new_circuit = loads(line)
+         new_circuit['sub'] = "dev-id"
+         new_circuit['is_published'] = True
+         mongo_db_instance_["circuits"].insert_one(new_circuit)
+    
+    logging.warn(f"loaded initial data {len(file_lines)} items")
 
 
 def eval_keys_path():

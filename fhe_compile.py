@@ -7,7 +7,7 @@ from multiprocessing import Process, Manager
 from concrete import fhe
 import logging
 
-_SAFE_MODULES = frozenset(("numpy","concrete"))
+_SAFE_MODULES = frozenset(("numpy","concrete", "numpy.core._methods"))
 
 
 def _safe_import(name, *args, **kwargs):

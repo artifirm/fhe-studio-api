@@ -6,6 +6,8 @@ services:
       - '27017:27017'
     volumes:
       - fhe_mongo_data:/data/db
+    restart: on-failure
+    
   fhe-api:
     image: fhe-api:v1
     ports:
@@ -16,6 +18,6 @@ services:
         - EVAL_KEY_PATH=/fhe-evals
         - DATABASE_URL=mongodb
         - USE_OAUTH2=1
-
+        - MAX_COMPLEXITY=240210706
 volumes:
   fhe_mongo_data:        

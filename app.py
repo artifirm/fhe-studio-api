@@ -125,17 +125,20 @@ def vault_api():
 # ********************************
 @app.route('/api/vault/encrypt/<id>', methods=['POST'])
 def vault_encrypt_api(id):
+    user_sub()
     form = json.loads(request.data)
-    return encrypt(id, form['values'], user_sub())
+    return encrypt(form['client_specs'], form['values'])
 
 @app.route('/api/vault/decrypt/<id>', methods=['POST'])
 def vault_decrypt_api(id):
+    user_sub()
     form = json.loads(request.data)
-    return [ decrypt(id, form['values'], user_sub()) ]
+    return [ decrypt(form['client_specs'], form['values']) ]
 
 @app.route('/api/vault/client-specs/<id>', methods=['POST'])
 def client_specs_api(id):
-    return client_specs(id, user_sub())
+    s = client_specs(id, user_sub())
+    return [ s ]
 
 
 @app.route('/api/delete-vault-item/<id>', methods=['DELETE'])
