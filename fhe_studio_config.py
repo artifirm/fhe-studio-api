@@ -7,6 +7,8 @@ from expiringdict import ExpiringDict
 import logging
 import json
 from bson.json_util import loads
+import random
+import string
 
 cache = ExpiringDict(max_len=100000, max_age_seconds = 60 * 60 * 24 * 31)
 
@@ -41,7 +43,7 @@ def mongo_db_instance():
     return mongo_db_instance_
 
 def user_info():
-    token = request.headers["authorization"]
+    token = request.headers["authorization"].replace("Bearer ","")
     if token not in cache:
         cache[token] = user_info_impl(token)
     logging.debug(f'user_info: ${cache[token]}')
@@ -54,6 +56,9 @@ def user_sub_or_default(sub_default):
     return user_info()['sub']
 
 def user_info_impl(token):
+    if token.startswith('fhe'):
+       raise Exception("USER_NOT_AUTHORIZED")
+    
     if use_oauth2 != '0':
         logging.debug(f'validating new token')
         headers = {'Accept': 'application/json',
@@ -82,3 +87,14 @@ def user_sub():
     u = user_info()
     logging.debug(f'user: {str(u)}')
     return user_info()['sub']
+
+def new_fhe_token(username, sub):
+    info =  {
+        'email': username,
+        'sub': sub,
+        'picture': None,
+        'email_verified': False
+        }  
+    token = 'fhe' + ''.join(random.choices(string.hexdigits, k=20))
+    cache[token] = info
+    return (info, token)

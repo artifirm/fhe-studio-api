@@ -11,6 +11,7 @@ MAX_FETCH_LIMIT=1024
 # init
 circuits = mongo_db_instance()["circuits"]
 keys = mongo_db_instance()["keys"]
+fhe_users = mongo_db_instance()["fhe_users"]
 
 def persist_ciruit(id, c):
     c['created_time'] = datetime.utcnow()
@@ -85,3 +86,33 @@ def delete_vault_item(id, sub):
     if result.matched_count != 1:
         raise Exception("no record found")
     return "{}"
+
+def mongo_create_fhe_user(username, password):
+    r = fhe_users.find_one({"username": username, "deleted": False })
+    if r is not None:
+        raise Exception("User with this user name already exist")
+    
+    id_ = fhe_users.insert_one({"username": username,
+                               "password": password,
+                               "deleted": False}).inserted_id
+    return id_
+
+
+def mongo_fetch_user(username, password):
+    r = fhe_users.find_one({"username": username, "deleted": False })
+    if r is None:
+        raise Exception('USER_NOT_AUTHORIZED')
+    if r['password'] != password:
+        raise Exception('USER_NOT_AUTHORIZED')
+    return r
+
+def mongo_user_password_update(id, current_password, new_password):
+     r = fhe_users.find_one({'_id':ObjectId(id), "deleted": False })
+     if r['password'] != current_password:
+        raise Exception('Current password does not match')
+     
+     fhe_users.update_one({'_id':ObjectId(id) }, 
+                           { "$set": {
+                               "password": new_password,
+                            }}, False)
+     

@@ -7,9 +7,14 @@ import json
 import os
 import traceback
 import sys
-from fhe_studio_config import user_info, user_sub, user_sub_or_default
+from fhe_studio_config import user_info, user_sub, \
+            user_sub_or_default, new_fhe_token
+from hashlib import sha256
 
-from mongo_context import find_circuit, find_circuits,vault, delete_circuit, client_specs, delete_vault_item, client_src
+from mongo_context import find_circuit, find_circuits,\
+    vault, delete_circuit, client_specs, delete_vault_item, \
+    client_src, mongo_create_fhe_user, mongo_fetch_user,\
+    mongo_user_password_update
 import logging
 
 root = logging.getLogger()
@@ -150,10 +155,49 @@ def api_client_src(id):
     return client_src(id, user_sub())
 
 
+@app.route('/api/fhe-create-user', methods=['POST'])
+def app_fhe_create_user():
+    form = json.loads(request.data)
+    logging.info(f"create a new user {form['username']}")
+
+    h = sha256(form['password'].encode('utf-8')).hexdigest()
+    sub = mongo_create_fhe_user(form['username'], h)
+    _, token = new_fhe_token(form['username'], str(sub))
+    return {'code': token }
+
+@app.route('/api/oid-fhe-login', methods=['POST'])
+def app_oid_fhe_login():
+    form = json.loads(request.data)
+    logging.info(f"authenticating user {form['username']}")
+
+    h = sha256(form['password'].encode('utf-8')).hexdigest()
+    u = mongo_fetch_user(form['username'], h)
+    _, token = new_fhe_token(u['username'], str(u['_id']))
+    return {'code': token }
+
+
+
+@app.route('/api/oid-token', methods=['POST'])
+def app_oid_token():
+    return {'access_token':  request.args.get('code')}
+
+@app.route('/api/oid-user-info')
+def app_oid_user_info():
+    return user_info()
+
+@app.route('/api/oid_password_update', methods=['POST'])
+def app_oid_password_update():
+    form = json.loads(request.data)
+    h_current = sha256(form['current_password'].encode('utf-8')).hexdigest()
+    h_new = sha256(form['new_password'].encode('utf-8')).hexdigest()
+    mongo_user_password_update(user_sub(), h_current, h_new)
+    return {}
 
 @app.route('/dev-token', methods=['POST'])
 def dev_token():
     return {'access_token':'dev-access-token'}
+
+
 
 @app.route('/dev-user')
 def dev_user():
