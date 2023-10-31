@@ -1,5 +1,6 @@
 import json
 from RestrictedPython import safe_builtins, compile_restricted
+from RestrictedPython import Eval, Guards
 from RestrictedPython.PrintCollector import PrintCollector
 from concrete.fhe.extensions.tag import tag_context 
 from mongo_context import persist_ciruit
@@ -21,7 +22,9 @@ def execute_user_code_local(user_code, user_func, return_dict):
         "__builtins__": {
             **safe_builtins,
             "__import__": _safe_import,
-            "_getitem_": fhe.LookupTable.__getitem__,
+            "_getitem_": Eval.default_guarded_getitem,
+            "_getiter_": Eval.default_guarded_getiter,
+            "_iter_unpack_sequence_":Guards.guarded_iter_unpack_sequence
         },
         '_print_': PrintCollector,
     }
