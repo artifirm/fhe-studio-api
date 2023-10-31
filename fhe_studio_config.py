@@ -62,7 +62,7 @@ def user_info_impl(token):
     if use_oauth2 != '0':
         logging.debug(f'validating new token')
         headers = {'Accept': 'application/json',
-                   'Authorization': f'Bearer ${token}' }
+                   'Authorization': f'Bearer {token}' }
         response = requests.get('https://openidconnect.googleapis.com/v1/userinfo', headers = headers)
         if response.status_code!= 200:
             raise Exception("USER_NOT_AUTHORIZED")
