@@ -13,7 +13,7 @@ circuits = mongo_db_instance()["circuits"]
 keys = mongo_db_instance()["keys"]
 fhe_users = mongo_db_instance()["fhe_users"]
 
-def persist_ciruit(id, c):
+def persist_circuit(id, c):
     c['created_time'] = datetime.utcnow()
     c['deleted'] = False    
     if id is None:
