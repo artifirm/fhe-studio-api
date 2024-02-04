@@ -1,4 +1,5 @@
 import json
+from typing import Callable
 from RestrictedPython import safe_builtins, compile_restricted
 from RestrictedPython import Eval, Guards
 from RestrictedPython.PrintCollector import PrintCollector
@@ -21,14 +22,18 @@ def _safe_import(name, *args, **kwargs):
     if name == 'concrete':
         fhe_studio_ex = {
             "compiler_fn": module.fhe.Compiler,
+            "compiler_decorator_fn": module.fhe.compiler,
+            "compile_decorator_fn": None,
             "compile_fn": None,
             "_globals": args[0]
         }
 
+        # fhe.Compile class support
         def _compile_fn(*args, **kwargs):
             logging.debug('compiling the circuit')
             compiled_circuit =  fhe_studio_ex["compile_fn"] (*args, **kwargs)
             fhe_studio_ex["_globals"]["compiled_circuit"] = compiled_circuit
+            logging.debug('_compile_fn set using the class fhe.Compile')
             return compiled_circuit
         
         def _compiler_fn(*args, **kwargs):
@@ -38,12 +43,34 @@ def _safe_import(name, *args, **kwargs):
             fhe_studio_ex["compile_fn"] = compiler.compile
             compiler.compile = _compile_fn
             return compiler
+        # @fhe.compile decorator support
+        def _fhe_compile_decor_fn(*args, **kwargs):
+            logging.debug('creating the compile decorator')
+            compiled_circuit = fhe_studio_ex["compile_decorator_fn"](*args, **kwargs)
+            fhe_studio_ex["_globals"]["compiled_circuit"] = compiled_circuit
+            logging.debug('_fhe_compile_decor_fn set using @fhe.compile')
+            return compiled_circuit
+        
+        def _fhe_compiler_decor_fn(*args, **kwargs):
+            logging.debug('creating the compiler decorator')
+            dec_fn = fhe_studio_ex["compiler_decorator_fn"] (*args, **kwargs)
+            def decoration(func: Callable):
+                dec_fn_result = dec_fn(func)
+                fhe_studio_ex["compile_decorator_fn"] = dec_fn_result.compile
+                dec_fn_result.compile = _fhe_compile_decor_fn
+                #logging.error(dec_fn_result)
+                return dec_fn_result
+            return decoration
         
         module.fhe.Compiler = _compiler_fn
+        module.fhe.compiler = _fhe_compiler_decor_fn
     return module
 
 # sandbox for fhe compilation
 def execute_user_code_local(user_code, user_func, return_dict):
+    
+    def _apply(f, *a, **kw):
+        return f(*a, **kw)
     
     my_globals = {
         "__builtins__": {
@@ -51,17 +78,24 @@ def execute_user_code_local(user_code, user_func, return_dict):
             "__import__": _safe_import,
             "_getitem_": Eval.default_guarded_getitem,
             "_getiter_": Eval.default_guarded_getiter,
+            "_apply_": _apply,
+            "map": map,
+            "filter": filter,
+            "list": list,
             "_iter_unpack_sequence_": Guards.guarded_iter_unpack_sequence
         },
         '_print_': PrintCollector,
     }
 
     try:
-        byte_code = compile_restricted(
-            user_code, filename="<user_code>", mode="exec")
+        byte_code = compile_restricted(user_code)
         exec(byte_code, my_globals)
+        
+        if user_func not in my_globals:
+            raise Exception("FHE circuit has not been compiled, please make sure you call the compile function!")
+        
         server = my_globals[user_func].server;
-        print_lines = my_globals["_print"]()
+        print_lines = my_globals["_print"]()[-1024:]
 
         config_str =  server.client_specs.serialize().decode('utf-8');
         logging.debug(config_str)
@@ -81,7 +115,7 @@ def execute_user_code_local(user_code, user_func, return_dict):
 
     except Exception as e:
         err_str = str(e)
-        logging.error (err_str)
+        logging.error (e)
         return_dict['value'] = {'exception': err_str }
 
 
