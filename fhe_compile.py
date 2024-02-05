@@ -152,4 +152,7 @@ def fhe_compile(id, usrData):
     logging.debug(new_doc)
     id = persist_circuit(id, new_doc)
     
-    return {'id': id, 'output': doc['output']}
+    return { 'id': id, 
+            'output': doc.get('output', ''),
+            'exception': doc.get('exception', '')
+        }
