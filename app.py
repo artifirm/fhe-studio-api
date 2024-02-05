@@ -235,13 +235,13 @@ def handle_exception(e):
 def send_report(path):
     return send_from_directory('static', path)
 
-@app.route('/')
-@app.route('/oauth2')
-@app.route('/fhe-vault')
-@app.route('/fhe-editor')
-@app.route('/circuits-zoo')
-def send_report_index():
-    return send_from_directory('static', 'index.html')
+# @app.route('/')
+# @app.route('/oauth2')
+# @app.route('/fhe-vault')
+# @app.route('/fhe-editor')
+# @app.route('/circuits-zoo')
+# def send_report_index():
+#     return send_from_directory('static', 'index.html')
 
 
 @app.errorhandler(Exception)

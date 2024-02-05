@@ -17,7 +17,7 @@ COPY ./*.py /fhe-api/
 COPY static static
 
 # Examples
-COPY fhe_studio.circuits.bson fhe_studio.circuits.bson
+COPY fhe_studio.circuits.json fhe_studio.circuits.json
 
 # configure the container to run in an executed manner
 ENTRYPOINT [ "python" ]
