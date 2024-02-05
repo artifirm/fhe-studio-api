@@ -1,6 +1,6 @@
 # save this as app.py
 from flask import Flask, request, send_from_directory
-from fhe_compile import fhe_compile
+from fhe_compile import fhe_compile, fhe_play
 from fhe_client import client_key_gen, encrypt, decrypt
 from fhe_server import fhe_server_compute
 import json
@@ -50,6 +50,15 @@ def edit_circuit(id):
     logging.info(f'edit-circuit id: {id} , {usrData}')
     result = fhe_compile(id, usrData)
     return result
+
+@app.route('/api/play-circuit', methods=['POST'])
+def play_circuit():
+    form = json.loads(request.data)
+    result = fhe_play(form)
+    return {
+        'output': result.get('output', ''),
+        'exception': result.get('exception',''),
+    }
 
 @app.route('/api/delete-circuit/<id>', methods=['DELETE'])
 def api_edit_circuit(id):

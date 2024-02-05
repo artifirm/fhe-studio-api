@@ -6,7 +6,7 @@ import requests
 from expiringdict import ExpiringDict
 import logging
 import json
-from bson.json_util import loads
+from bson import json_util
 import random
 import string
 
@@ -23,17 +23,26 @@ else:
     logging.warn("--- USING MOCK DATABASE ---")
     mongo_db_instance_ = mongomock.MongoClient().db
     
-    with open('fhe_studio.circuits.bson') as file:
-         file_lines = file.readlines()
+    with open('fhe_studio.circuits.json') as f:
+        docs = json.load(f)
+        for it in docs:
+            new_circuit = json_util.loads( json.dumps(it) )
+            new_circuit['sub'] = "dev-id"
+            new_circuit['is_published'] = True
+            mongo_db_instance_["circuits"].insert_one(new_circuit)
+        
+
+    # with open('fhe_studio.circuits.bson') as file:
+    #      file_lines = file.readlines()
     
-    for line in file_lines:
-        if len(line) > 0:
-         new_circuit = loads(line)
-         new_circuit['sub'] = "dev-id"
-         new_circuit['is_published'] = True
-         mongo_db_instance_["circuits"].insert_one(new_circuit)
+    # for line in file_lines:
+    #     if len(line) > 0:
+    #      new_circuit = loads(line)
+    #      new_circuit['sub'] = "dev-id"
+    #      new_circuit['is_published'] = True
+    #      mongo_db_instance_["circuits"].insert_one(new_circuit)
     
-    logging.warn(f"loaded initial data {len(file_lines)} items")
+    logging.warn(f"loaded initial data {len(docs)} items")
 
 
 def eval_keys_path():

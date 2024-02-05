@@ -135,15 +135,18 @@ def execute_user_code(user_code, user_func, time_out_sec = 30):
     logging.debug(f'return_dict: {return_dict}' )
     return return_dict['value']
 
-def fhe_compile(id, usrData):
+def fhe_play(usrData):
     src = usrData['src']
-    # bug in concrete
     tag_context.stack = []
     logging.info(src)
     doc = execute_user_code(src, "compiled_circuit")
     if 'exception' in doc:
         return {'exception' : doc['exception'] }
     
+    return doc
+
+def fhe_compile(id, usrData):
+    doc = fhe_play(usrData)
     new_doc = { **doc, **usrData }
 
     logging.debug(new_doc)
