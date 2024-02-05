@@ -95,7 +95,7 @@ def execute_user_code_local(user_code, user_func, return_dict):
             raise Exception("FHE circuit has not been compiled, please make sure you call the compile function!")
         
         server = my_globals[user_func].server;
-        print_lines = my_globals["_print"]()[-1024:]
+        print_lines = my_globals.get("_print", lambda : '')()[-1024:]
 
         config_str =  server.client_specs.serialize().decode('utf-8');
         logging.debug(config_str)
