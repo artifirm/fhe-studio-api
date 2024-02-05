@@ -59,6 +59,7 @@ def api_edit_circuit(id):
 @app.route('/api/fhe-eval/<eval_key_id>', methods=['POST'])
 def fhe_eval(eval_key_id):
     form = json.loads(request.data)
+     
     return fhe_server_compute(eval_key_id, form['values'], user_sub())
 
 def list_circuits(is_published_only = False, sub = None):
@@ -95,9 +96,16 @@ def circuit(circuit_id):
     if c['is_private'] and c['sub'] != user_sub_or_default('None'):
         src = '# source code is private for this circuit'
 
-    return { "name": c['name'], "src": src, "description": c['description'], 
-            "is_private": c['is_private'], "is_published": c.get('is_published', False),
-            'polynomial_size': c['polynomial_size'], 'locked': not locked }
+    return { 
+        "name": c['name'], 
+        "src": src, 
+        "description": c["description"], 
+        "is_private": c["is_private"], 
+        "is_published": c.get("is_published", False),
+        "polynomial_size": c["polynomial_size"], 
+        "locked": not locked,
+        "output":c.get('output', '')
+    }
 
 @app.route('/api/mlir/<circuit_id>', methods=['GET'])
 def show_mlir(circuit_id):
@@ -125,14 +133,13 @@ def vault_api():
     return records
 
 # ********************************
-# Todo: encrypt & decrypt should be a WebAssembly local function
-# both functions needs to be removed from here
+# Todo: redo the vault, make it more intuitive
 # ********************************
 @app.route('/api/vault/encrypt/<id>', methods=['POST'])
 def vault_encrypt_api(id):
     user_sub()
     form = json.loads(request.data)
-    return encrypt(form['client_specs'], form['values'])
+    return encrypt(form['client_specs'], form['values'], id)
 
 @app.route('/api/vault/decrypt/<id>', methods=['POST'])
 def vault_decrypt_api(id):
