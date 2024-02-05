@@ -28,17 +28,24 @@ def client_key_gen(circuit_id, sub):
                   "sub": sub,
 #                  "evaluation_keys": serialized_evaluation_keys
                     })
-    f = open(f"{eval_keys_path()}/{key_id}.eval", "wb")
-    f.write(serialized_evaluation_keys)
-    f.close()
+    # todo: rethink the vault workflow
+    # f = open(f"{eval_keys_path()}/{key_id}.eval", "wb")
+    # f.write(serialized_evaluation_keys)
+    # f.close()
 
 
-def encrypt(client_specs_b64: str, values: [str]):
+def encrypt(client_specs_b64: str, values: [str], key_id):
     #k = find_keys(key_id, sub)
     #client_specs = fhe.ClientSpecs.deserialize(k['circuit']['client_specs'].encode('utf-8'))
     client_specs = fhe.ClientSpecs.deserialize(base64.b64decode(client_specs_b64))
 
     client = gen_client(client_specs)
+    # todo: rethink the vault workflow
+    if not os.path.isfile(f"{eval_keys_path()}/{key_id}.eval"):
+        serialized_evaluation_keys = client.evaluation_keys.serialize()
+        f = open(f"{eval_keys_path()}/{key_id}.eval", "wb")
+        f.write(serialized_evaluation_keys)
+        f.close()
 
     int_values = values
     #print(f'int_values to :::::::::::: ${int_values}')

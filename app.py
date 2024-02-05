@@ -1,6 +1,6 @@
 # save this as app.py
 from flask import Flask, request, send_from_directory
-from fhe_compile import fhe_compile
+from fhe_compile import fhe_compile, fhe_play
 from fhe_client import client_key_gen, encrypt, decrypt
 from fhe_server import fhe_server_compute
 import json
@@ -51,6 +51,15 @@ def edit_circuit(id):
     result = fhe_compile(id, usrData)
     return result
 
+@app.route('/api/play-circuit', methods=['POST'])
+def play_circuit():
+    form = json.loads(request.data)
+    result = fhe_play(form)
+    return {
+        'output': result.get('output', ''),
+        'exception': result.get('exception',''),
+    }
+
 @app.route('/api/delete-circuit/<id>', methods=['DELETE'])
 def api_edit_circuit(id):
     return delete_circuit(id, user_sub())
@@ -59,6 +68,7 @@ def api_edit_circuit(id):
 @app.route('/api/fhe-eval/<eval_key_id>', methods=['POST'])
 def fhe_eval(eval_key_id):
     form = json.loads(request.data)
+     
     return fhe_server_compute(eval_key_id, form['values'], user_sub())
 
 def list_circuits(is_published_only = False, sub = None):
@@ -95,9 +105,16 @@ def circuit(circuit_id):
     if c['is_private'] and c['sub'] != user_sub_or_default('None'):
         src = '# source code is private for this circuit'
 
-    return { "name": c['name'], "src": src, "description": c['description'], 
-            "is_private": c['is_private'], "is_published": c.get('is_published', False),
-            'polynomial_size': c['polynomial_size'], 'locked': not locked }
+    return { 
+        "name": c['name'], 
+        "src": src, 
+        "description": c["description"], 
+        "is_private": c["is_private"], 
+        "is_published": c.get("is_published", False),
+        "polynomial_size": c["polynomial_size"], 
+        "locked": not locked,
+        "output":c.get('output', '')
+    }
 
 @app.route('/api/mlir/<circuit_id>', methods=['GET'])
 def show_mlir(circuit_id):
@@ -125,14 +142,13 @@ def vault_api():
     return records
 
 # ********************************
-# Todo: encrypt & decrypt should be a WebAssembly local function
-# both functions needs to be removed from here
+# Todo: redo the vault, make it more intuitive
 # ********************************
 @app.route('/api/vault/encrypt/<id>', methods=['POST'])
 def vault_encrypt_api(id):
     user_sub()
     form = json.loads(request.data)
-    return encrypt(form['client_specs'], form['values'])
+    return encrypt(form['client_specs'], form['values'], id)
 
 @app.route('/api/vault/decrypt/<id>', methods=['POST'])
 def vault_decrypt_api(id):
@@ -214,10 +230,10 @@ def handle_exception(e):
     return  f"Internal Error: {str(e)}", 500
 
 
-# this one is to serve local UI in the same docker image
-# @app.route('/<path:path>')
-# def send_report(path):
-#     return send_from_directory('static', path)
+#this one is to serve local UI in the same docker image
+@app.route('/<path:path>')
+def send_report(path):
+    return send_from_directory('static', path)
 
 # @app.route('/')
 # @app.route('/oauth2')
