@@ -8,8 +8,9 @@ from mongo_context import persist_circuit
 from multiprocessing import Process, Manager
 from concrete import fhe
 import logging
+import numpy as np
 
-_SAFE_MODULES = frozenset(("numpy","concrete", "numpy.core._methods"))
+_SAFE_MODULES = frozenset(("numpy","concrete", "numpy.core._methods","time"))
 
 def _safe_import(name, *args, **kwargs):
     logging.debug(f'import {name}')
@@ -71,6 +72,15 @@ def execute_user_code_local(user_code, user_func, return_dict):
     
     def _apply(f, *a, **kw):
         return f(*a, **kw)
+    def _write_guard(*a, **kw):
+        if isinstance(a[0],(list,np.ndarray, fhe.tracing.tracer.Tracer)):
+            return a[0]
+        else:
+            raise Exception(
+                'fhe_studio compiler: could not _write to this type: ' + 
+                str(type(a[0])))
+
+
     
     my_globals = {
         "__builtins__": {
@@ -78,6 +88,8 @@ def execute_user_code_local(user_code, user_func, return_dict):
             "__import__": _safe_import,
             "_getitem_": Eval.default_guarded_getitem,
             "_getiter_": Eval.default_guarded_getiter,
+            "_getattr_": Eval.default_guarded_getattr,
+            "_write_": _write_guard,
             "_apply_": _apply,
             "map": map,
             "filter": filter,
@@ -107,7 +119,8 @@ def execute_user_code_local(user_code, user_func, return_dict):
         return_dict['value'] = { 
             "mlir": server._mlir, 
             "complexity": int(server.complexity), 
-            "config": json.dumps(server._configuration.__dict__), 
+            #"config": json.dumps(server._configuration.__dict__), 
+            "config": "{}",
             "client_specs": config_str,
             "polynomial_size": bootstrap_keys[0].get("polynomialSize" , 0),
             'output': print_lines
